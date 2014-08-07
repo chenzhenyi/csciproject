@@ -27,6 +27,12 @@ public:
     int GetType() const;
     void SetId(int id);
     int GetId() const;
+    
+    void AddQuestion(Question question);
+    bool RemoveQuestion(int index);
+    bool ReplaceQuestion(int index, Question question);
+    void PrintQuestion(int index);
+    void CalcTotalMarks();
 private:
     int id;
     int type;

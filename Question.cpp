@@ -1,6 +1,16 @@
 #include "Question.h"
 
+#include <iostream>
+
+using namespace std;
+
 Question::Question() {
+}
+
+Question::Question(string question, vector<string> options, char answer, int marks):
+        question(question), options(options), answer(answer), marks(marks)
+{
+    
 }
 
 Question::Question(const Question& orig) {
@@ -41,3 +51,17 @@ string Question::GetQuestion() const {
     return question;
 }
 
+bool Question::CheckAnswer(char answer)
+{
+    
+}
+    
+void Question::Print()
+{
+    cout << question << endl;
+    
+    for (int i=0; i < options.size(); i++)
+    {
+        cout << 'a' + i << options[i] << endl;
+    }
+}

@@ -9,6 +9,14 @@ public:
     TestingSystem();
     TestingSystem(const TestingSystem& orig);
     virtual ~TestingSystem();
+    
+    void LoginUI();
+    void CreateTopicUI();
+    void ModifyTopicUI();
+    int DeleteTopicUI() const;
+    Question CreateQuestionUI() const;
+    int DeleteQuestionUI() const;
+    
 private:
 
 };

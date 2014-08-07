@@ -9,6 +9,7 @@ using namespace std;
 class Question {
 public:
     Question();
+    Question(string question, vector<string> options, char answer, int marks);
     Question(const Question& orig);
     virtual ~Question();
     
@@ -20,6 +21,19 @@ public:
     vector<string> GetOptions() const;
     void SetQuestion(string question);
     string GetQuestion() const;
+    
+    /**
+        Check the answer from user agaisnt the given answer from lecturer.
+
+        @param answer the choice.
+        @return true if the answer is correct, false otherwise.
+    */
+    bool CheckAnswer(char answer);
+    
+    /**
+        Pretty print the question.
+    */
+    void Print();
 private:
     string question;
     vector<string> options;

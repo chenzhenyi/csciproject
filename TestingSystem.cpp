@@ -14,9 +14,127 @@ TestingSystem::TestingSystem(const TestingSystem& orig) {
 TestingSystem::~TestingSystem() {
 }
 
+void TestingSystem::CandidateMainMenu(Candidate* candidate)
+{
+    cout << "1. Take test" << endl;
+    cout << "2. View test results" << endl;
+    cout << "0. Quit" << endl;
+    
+    int choice;
+    cin >> choice;
+    
+    switch (choice)
+    {
+        case 1:
+            TakeTestUI();
+            break;
+        case 2:
+            
+            break;
+        case 0:
+            return;
+    }
+    
+    CandidateMainMenu(candidate);
+}
+
+void TestingSystem::LecturerMainMenu(User* user)
+{
+    cout << "1. Create Candiate" << endl;
+    cout << "2. Modify Candidate" << endl;
+    cout << "3. Delete candidate" << endl;
+    cout << "4. Create test topic" << endl;
+    cout << "5. Modify test topic" << endl;
+    cout << "6. Delete test topic" << endl;
+    cout << "7. Create test question" << endl;
+    cout << "8. Modify test question" << endl;
+    cout << "9. Delete test topic" << endl;
+    cout << "10. View candidate's test result" << endl;
+    cout << "11. View results summary" << endl;
+    cout << "0. Quit" << endl;
+    
+    int choice;
+    cin >> choice;
+    
+    Topic t;
+    int id;
+    Candidate c;
+    string username;
+    
+    switch (choice)
+    {
+        case 1:
+            c = CreateCandiateUI();
+            ds.WriteCandidate(c);
+            break;
+        case 2:
+            c = ModifyCandidateUI();
+            ds.WriteCandidate(c);
+            break;
+        case 3:
+            username = DeleteCandidateUI();
+            ds.DeleteUser(username);
+            break;
+        case 4:
+            t = CreateTopicUI();
+            ds.WriteTopic(t);
+            break;
+        case 5:
+            t = ModifyTopicUI();
+            ds.WriteTopic(t);
+            break;
+        case 6:
+            id = DeleteTopicUI();
+            ds.DeleteTopic(id);
+            break;
+        case 7:
+            // TODO
+            break;
+        case 8:
+            break;
+        case 9:
+            break;
+        case 10:
+            break;
+        case 11:
+            break;
+        case 0:
+            return;
+    }
+    
+    LecturerMainMenu(user);
+}
+
 void TestingSystem::LoginUI()
 {
+    string username;
+    string pw;
+    bool success = false;
     
+    while (!success)
+    {
+        cout << "Enter username: ";
+        cin >> username;
+        cout << "Enter username: ";
+        cin >> username;
+
+        success = ds.CheckLogin(username, pw);
+        
+        if (!success)
+            cout << "Wrong username or password." << endl;
+    }
+    
+    User* user = ds.RetrieveUser(username);
+    
+    if (user->GetType() == 1)
+    {
+        Candidate* candidate = (Candidate*)user;
+        CandidateMainMenu(candidate);
+    }
+    else
+    {
+        LecturerMainMenu(user);
+    }
 }
 
 Topic TestingSystem::CreateTopicUI()
@@ -129,6 +247,21 @@ int TestingSystem::DeleteQuestionUI()
 }
 
 void TestingSystem::TakeTestUI()
+{
+    
+}
+
+Candidate TestingSystem::CreateCandiateUI()
+{
+    
+}
+    
+Candidate TestingSystem::ModifyCandidateUI()
+{
+    
+}
+    
+string TestingSystem::DeleteCandidateUI()
 {
     
 }

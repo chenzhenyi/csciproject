@@ -1,10 +1,3 @@
-/* 
- * File:   DataStorage.h
- * Author: ethan
- *
- * Created on August 10, 2014, 10:36 AM
- */
-
 #ifndef DATASTORAGE_H
 #define	DATASTORAGE_H
 
@@ -27,6 +20,8 @@ public:
     */
     bool RetrieveTopic(int topicId, Topic& topic);
     
+    bool DeleteTopic(int topicId);
+    
     /**
         Get test attempts done by a student with given ID.
 
@@ -37,6 +32,16 @@ public:
     
     vector<Attempt> RetreiveAllAttempts();
     bool CheckLogin(string username, string pw);
+    
+    /**
+        Get user information. If the user is a candidate, 
+        it will be casted to an User pointer.
+
+        @param username username.
+        @return A pointer to User object.
+    */
+    User* RetrieveUser(string username);
+    bool DeleteUser(string username);
     
     /**
         Write out an topic. If the topic passed in has an ID already exists in

@@ -9,6 +9,9 @@ public:
     TestingSystem(const TestingSystem& orig);
     virtual ~TestingSystem();
     
+    void CandidateMainMenu(Candidate* candidate);
+    void LecturerMainMenu(User* user);
+    
     // IMPORTANT: *all* these UI methods are not allowed to alter any info in the DB
     // New data should be returned, and passed to actual data manipulation methods.
     void LoginUI();
@@ -23,6 +26,10 @@ public:
     Question CreateQuestionUI();
     int DeleteQuestionUI();
     void TakeTestUI();
+    
+    Candidate CreateCandiateUI();
+    Candidate ModifyCandidateUI();
+    string DeleteCandidateUI();
     
 private:
     DataStorage ds;

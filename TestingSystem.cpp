@@ -14,7 +14,7 @@ TestingSystem::TestingSystem(const TestingSystem& orig) {
 TestingSystem::~TestingSystem() {
 }
 
-Topic TestingSystem::LoginUI()
+void TestingSystem::LoginUI()
 {
     
 }

@@ -1,19 +1,12 @@
-/* 
- * File:   main.cpp
- * Author: ethan
- *
- * Created on August 6, 2014, 9:34 PM
- */
-
 #include <cstdlib>
+
+#include "TestingSystem.h"
 
 using namespace std;
 
-/*
- * 
- */
 int main(int argc, char** argv) {
-
+    TestingSystem ts;
+    ts.LoginUI();
     return 0;
 }
 

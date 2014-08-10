@@ -12,16 +12,16 @@ public:
     // IMPORTANT: *all* these UI methods are not allowed to alter any info in the DB
     // New data should be returned, and passed to actual data manipulation methods.
     void LoginUI();
-    Topic CreateTopicUI() const;
-    Topic ModifyTopicUI() const;
+    Topic CreateTopicUI();
+    Topic ModifyTopicUI();
     /**
         Ask user for topic ID.
 
         @return topic Id to be deleted.
     */
-    int DeleteTopicUI() const;
-    Question CreateQuestionUI() const;
-    int DeleteQuestionUI() const;
+    int DeleteTopicUI();
+    Question CreateQuestionUI();
+    int DeleteQuestionUI();
     void TakeTestUI();
     
 private:

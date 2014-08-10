@@ -9,6 +9,8 @@
 #define	DATASTORAGE_H
 
 #include "Attempt.h"
+#include "Topic.h"
+#include "Candidate.h"
 
 class DataStorage {
 public:

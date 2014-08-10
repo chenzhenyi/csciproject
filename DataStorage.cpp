@@ -26,7 +26,7 @@ bool DataStorage::DeleteUser(string username)
     
 }
 
-vector<Attempt> DataStorage::RetreiveAttempts(int studentId) {
+vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
 }
 
 vector<Attempt> DataStorage::RetreiveAllAttempts() {

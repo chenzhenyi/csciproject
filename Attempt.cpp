@@ -70,3 +70,8 @@ int Attempt::CalculateTotalScore()
     totalScore = score;
     return score;
 }
+
+void Attempt::PrintAttemptResult()
+{
+    
+}

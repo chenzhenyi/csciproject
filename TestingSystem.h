@@ -31,6 +31,8 @@ public:
     Candidate ModifyCandidateUI();
     string DeleteCandidateUI();
     
+    void ShowCanddiateResults();
+    void ShowAllResutls();
 private:
     DataStorage ds;
 };

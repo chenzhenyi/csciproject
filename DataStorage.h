@@ -28,7 +28,7 @@ public:
         @param studentId test account ID of student.
         @return vector of attempts.
     */
-    vector<Attempt> RetreiveAttempts(int studentId);
+    vector<Attempt> RetreiveAttempts(string studentId);
     
     vector<Attempt> RetreiveAllAttempts();
     bool CheckLogin(string username, string pw);

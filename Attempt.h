@@ -22,6 +22,7 @@ public:
     vector<char> GetAnswers() const;
     
     int CalculateTotalScore();
+    void PrintAttemptResult();
 private:
     int topicId;
     string candidateId;

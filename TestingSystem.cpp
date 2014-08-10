@@ -263,5 +263,32 @@ Candidate TestingSystem::ModifyCandidateUI()
     
 string TestingSystem::DeleteCandidateUI()
 {
+    string username;
+    cout << "Enter candidate's username: ";
+    cin >> username;
     
+    return username;
+}
+
+void TestingSystem::ShowCanddiateResults()
+{
+    string testAccountID;
+    cout << "Enter candidate's test account ID: ";
+    cin >> testAccountID;
+    
+    vector<Attempt> attempts = ds.RetreiveAttempts(testAccountID);
+    
+    for (int i=0; i<attempts.size(); i++)
+    {
+        // TODO
+    }
+}
+
+void TestingSystem::ShowAllResutls()
+{
+    vector<Attempt> attempts = ds.RetreiveAllAttempts();
+    for (int i=0; i<attempts.size(); i++)
+    {
+        // TODO
+    }
 }

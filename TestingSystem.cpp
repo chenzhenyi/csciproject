@@ -1,4 +1,5 @@
 #include "TestingSystem.h"
+#include "Topic.h"
 
 #include <iostream>
 
@@ -13,23 +14,67 @@ TestingSystem::TestingSystem(const TestingSystem& orig) {
 TestingSystem::~TestingSystem() {
 }
 
-void LoginUI()
+Topic TestingSystem::LoginUI()
 {
     
 }
 
-void CreateTopicUI()
+Topic TestingSystem::CreateTopicUI()
 {
     // TODO: ask for a new question (loop), insert, calc total marks
+    Topic topic;
+    
+    bool done = false;
+    while (!done)
+    {
+        int questionNo; // index, starts from 0
+        cout << "Enter a new question: ";
+        cin >> questionNo;
+        
+        // simply create new question and over write the old one
+        Question q = CreateQuestionUI();
+        topic.ReplaceQuestion(questionNo, q);
+    }
+    
+    topic.CalcTotalMarks();
+    return topic;
 }
 
-void ModifyTopicUI()
+Topic TestingSystem::ModifyTopicUI()
 {
     // TODO: print questions, ask for number to change (loop), ask for new question,
     // replace, calc total marks
+    bool validTopic = false;
+    Topic topic;
+    while(!validTopic)
+    {
+        int topicId;
+        cout << "Enter topic ID: ";
+        cin >> topicId;
+
+        validTopic = ds.RetrieveTopic(topicId, topic);
+        
+        if (!validTopic)
+            cout << "Invalid topic ID etered";
+    }
+    
+    bool done = false;
+    while (!done)
+    {
+        int questionNo; // index, starts from 0
+        cout << "Enter topic question number to modify (0-" << topic.GetQuestions().size()-1 << "): ";
+        cin >> questionNo;
+        
+        // simply create new question and over write the old one
+        Question q = CreateQuestionUI();
+        topic.ReplaceQuestion(questionNo, q);
+    }
+    
+    topic.CalcTotalMarks();
+    return topic;
 }
 
-int DeleteTopicUI()
+int TestingSystem::DeleteTopicUI()
 {
     int id;
     cout << "Enter topic ID to delete: ";
@@ -38,7 +83,7 @@ int DeleteTopicUI()
     return id;
 }
 
-Question CreateQuestionUI()
+Question TestingSystem::CreateQuestionUI()
 {
     string question;
     vector<string> options;
@@ -74,11 +119,16 @@ Question CreateQuestionUI()
     return q;
 }
 
-int DeleteQuestionUI()
+int TestingSystem::DeleteQuestionUI()
 {
     int index;
     cout << "Enter question number to delete: ";
     cin >> index;
     
     return index;
+}
+
+void TestingSystem::TakeTestUI()
+{
+    
 }

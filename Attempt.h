@@ -17,10 +17,15 @@ public:
     string GetCandidateId() const;
     void SetTopicId(int topicId);
     int GetTopicId() const;
+    void SetAnswers(vector<char> answers);
+    vector<char> GetAnswers() const;
+    
+    int CalculateTotalScore();
 private:
     int topicId;
     string candidateId;
     int totalScore;
+    vector<char> answers;
 };
 
 #endif	/* ATTEMPT_H */

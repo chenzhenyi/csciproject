@@ -29,7 +29,7 @@ void TestingSystem::CandidateMainMenu(Candidate* candidate)
             TakeTestUI();
             break;
         case 2:
-            
+            ShowCandiateResults();
             break;
         case 0:
             return;
@@ -88,21 +88,47 @@ void TestingSystem::LecturerMainMenu(User* user)
             ds.DeleteTopic(id);
             break;
         case 7:
-            // TODO
+            t = CreateSingleQuestionUI();
+            ds.WriteTopic(t);
             break;
         case 8:
+            t = ModifySingleQuestionUI();
+            ds.WriteTopic(t);
             break;
         case 9:
+            t = DeleteSingleQuestionUI();
+            ds.WriteTopic(t);
             break;
         case 10:
+            ShowCandiateResults();
             break;
         case 11:
+            ShowAllResults();
             break;
         case 0:
             return;
     }
     
     LecturerMainMenu(user);
+}
+
+Topic TestingSystem::ChooseTopicUI()
+{
+    bool validTopic = false;
+    Topic topic;
+    while(!validTopic)
+    {
+        int topicId;
+        cout << "Enter topic ID: ";
+        cin >> topicId;
+
+        validTopic = ds.RetrieveTopic(topicId, topic);
+        
+        if (!validTopic)
+            cout << "Invalid topic ID etered";
+    }
+    
+    return topic;
 }
 
 void TestingSystem::LoginUI()
@@ -115,7 +141,7 @@ void TestingSystem::LoginUI()
     {
         cout << "Enter username: ";
         cin >> username;
-        cout << "Enter username: ";
+        cout << "Enter password: ";
         cin >> username;
 
         success = ds.CheckLogin(username, pw);
@@ -162,19 +188,7 @@ Topic TestingSystem::ModifyTopicUI()
 {
     // TODO: print questions, ask for number to change (loop), ask for new question,
     // replace, calc total marks
-    bool validTopic = false;
-    Topic topic;
-    while(!validTopic)
-    {
-        int topicId;
-        cout << "Enter topic ID: ";
-        cin >> topicId;
-
-        validTopic = ds.RetrieveTopic(topicId, topic);
-        
-        if (!validTopic)
-            cout << "Invalid topic ID etered";
-    }
+    Topic topic = ChooseTopicUI();
     
     bool done = false;
     while (!done)
@@ -194,11 +208,9 @@ Topic TestingSystem::ModifyTopicUI()
 
 int TestingSystem::DeleteTopicUI()
 {
-    int id;
-    cout << "Enter topic ID to delete: ";
-    cin >> id;
+    Topic topic = ChooseTopicUI();
     
-    return id;
+    return topic.GetId();
 }
 
 Question TestingSystem::CreateQuestionUI()
@@ -248,7 +260,28 @@ int TestingSystem::DeleteQuestionUI()
 
 void TestingSystem::TakeTestUI()
 {
+    Topic topic = ChooseTopicUI();
     
+    vector<Question> questions = topic.GetQuestions();
+    vector<char> answers;
+    Attempt attempt;
+    for (int i=0; i<questions.size(); i++)
+    {
+        char answer;
+        questions[i].Print();
+        cout << "Enter answer: ";
+        cin >> answer;
+        answers.push_back(answer);
+        
+        cout << endl;
+    }
+    
+    attempt.SetAnswers(answers);
+    attempt.CalculateTotalScore();
+    
+    cout << "Total score: " << attempt.GetTotalScore() << endl;
+    
+    ds.WriteAttempt(attempt);
 }
 
 Candidate TestingSystem::CreateCandiateUI()
@@ -270,7 +303,7 @@ string TestingSystem::DeleteCandidateUI()
     return username;
 }
 
-void TestingSystem::ShowCanddiateResults()
+void TestingSystem::ShowCandiateResults()
 {
     string testAccountID;
     cout << "Enter candidate's test account ID: ";
@@ -280,15 +313,94 @@ void TestingSystem::ShowCanddiateResults()
     
     for (int i=0; i<attempts.size(); i++)
     {
-        // TODO
+        attempts[i].PrintAttemptResult();
     }
 }
 
-void TestingSystem::ShowAllResutls()
+void TestingSystem::ShowAllResults()
 {
     vector<Attempt> attempts = ds.RetreiveAllAttempts();
     for (int i=0; i<attempts.size(); i++)
     {
-        // TODO
+        attempts[i].PrintAttemptResult();
     }
+}
+
+Topic TestingSystem::CreateSingleQuestionUI()
+{
+    Topic topic = ChooseTopicUI();
+    
+    bool validQuestion = false;
+    int questionNumber;
+
+    while(!validQuestion)
+    {
+        int count = topic.GetQuestions().size();
+        cout << "Enter question number (0-" << count-1 << "): ";
+        cin >> questionNumber;
+        
+        validQuestion = questionNumber < 0 || questionNumber > count-1;
+        if (!validQuestion)
+            cout << "Invalid question number." << endl;
+    }
+    
+    Question question = CreateQuestionUI();
+    
+    vector<Question> questions = topic.GetQuestions();
+    questions.push_back(question);
+    topic.SetQuestions(questions);
+    
+    return topic;
+}
+
+Topic TestingSystem::ModifySingleQuestionUI()
+{
+    Topic topic = ChooseTopicUI();
+    
+    bool validQuestion = false;
+    int questionNumber;
+
+    while(!validQuestion)
+    {
+        int count = topic.GetQuestions().size();
+        cout << "Enter question number (0-" << count-1 << "): ";
+        cin >> questionNumber;
+        
+        validQuestion = questionNumber < 0 || questionNumber > count-1;
+        if (!validQuestion)
+            cout << "Invalid question number." << endl;
+    }
+    
+    Question question = CreateQuestionUI();
+    
+    vector<Question> questions = topic.GetQuestions();
+    questions[questionNumber] = question;
+    topic.SetQuestions(questions);
+    
+    return topic;
+}
+
+Topic TestingSystem::DeleteSingleQuestionUI()
+{
+    Topic topic = ChooseTopicUI();
+    
+    bool validQuestion = false;
+    int questionNumber;
+
+    while(!validQuestion)
+    {
+        int count = topic.GetQuestions().size();
+        cout << "Enter question number (0-" << count-1 << "): ";
+        cin >> questionNumber;
+        
+        validQuestion = questionNumber < 0 || questionNumber > count-1;
+        if (!validQuestion)
+            cout << "Invalid question number." << endl;
+    }
+    
+    vector<Question> questions = topic.GetQuestions();
+    questions.erase(questions.begin() + questionNumber);
+    topic.SetQuestions(questions);
+    
+    return topic;
 }

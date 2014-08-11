@@ -12,6 +12,8 @@ public:
     void CandidateMainMenu(Candidate* candidate);
     void LecturerMainMenu(User* user);
     
+    Topic ChooseTopicUI();
+    
     // IMPORTANT: *all* these UI methods are not allowed to alter any info in the DB
     // New data should be returned, and passed to actual data manipulation methods.
     void LoginUI();
@@ -31,8 +33,12 @@ public:
     Candidate ModifyCandidateUI();
     string DeleteCandidateUI();
     
-    void ShowCanddiateResults();
-    void ShowAllResutls();
+    void ShowCandiateResults();
+    void ShowAllResults();
+    
+    Topic CreateSingleQuestionUI();
+    Topic ModifySingleQuestionUI();
+    Topic DeleteSingleQuestionUI();
 private:
     DataStorage ds;
 };

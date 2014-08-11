@@ -6,7 +6,7 @@
  */
 
 #include <vector>
-
+#include <iostream>
 #include "Attempt.h"
 #include "Topic.h"
 
@@ -73,5 +73,5 @@ int Attempt::CalculateTotalScore()
 
 void Attempt::PrintAttemptResult()
 {
-    
+    cout << candidateId << "   "  << topicId << "   " << totalScore;
 }

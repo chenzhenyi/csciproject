@@ -5,6 +5,7 @@
 #include "Topic.h"
 #include "Candidate.h"
 
+
 class DataStorage {
 public:
     DataStorage();
@@ -55,6 +56,7 @@ public:
     void WriteUser(User user);
     void WriteAttempt(Attempt attempt);
 private:
+	bool isOpenDB = false;
     
 };
 

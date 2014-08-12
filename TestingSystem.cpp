@@ -23,10 +23,14 @@ void TestingSystem::CandidateMainMenu(Candidate* candidate)
     int choice;
     cin >> choice;
     
+    Attempt a;
+    
     switch (choice)
     {
         case 1:
-            TakeTestUI();
+            a =TakeTestUI();
+            a.SetCandidateId(candidate->GetTestAccountID());
+            ds.WriteAttempt(a);
             break;
         case 2:
             ShowCandiateResults();
@@ -258,7 +262,7 @@ int TestingSystem::DeleteQuestionUI()
     return index;
 }
 
-void TestingSystem::TakeTestUI()
+Attempt TestingSystem::TakeTestUI()
 {
     Topic topic = ChooseTopicUI();
     
@@ -276,12 +280,14 @@ void TestingSystem::TakeTestUI()
         cout << endl;
     }
     
+    attempt.SetTopicId(topic.GetId());
     attempt.SetAnswers(answers);
     attempt.CalculateTotalScore();
     
     cout << "Total score: " << attempt.GetTotalScore() << endl;
     
-    ds.WriteAttempt(attempt);
+    return attempt;
+    //ds.WriteAttempt(attempt);
 }
 
 Candidate TestingSystem::CreateCandiateUI()

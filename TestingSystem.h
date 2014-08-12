@@ -27,7 +27,7 @@ public:
     int DeleteTopicUI();
     Question CreateQuestionUI();
     int DeleteQuestionUI();
-    void TakeTestUI();
+    Attempt TakeTestUI();
     
     Candidate CreateCandiateUI();
     Candidate ModifyCandidateUI();

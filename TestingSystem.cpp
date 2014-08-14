@@ -146,7 +146,7 @@ void TestingSystem::LoginUI()
         cout << "Enter username: ";
         cin >> username;
         cout << "Enter password: ";
-        cin >> username;
+        cin >> pw;
 
         success = ds.CheckLogin(username, pw);
         

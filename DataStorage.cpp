@@ -2,6 +2,8 @@
 #include <sqlite3.h>
 #define DB "test.db"
 #include <iostream>
+#include <string>
+#include <topic.h>
 using namespace std;
 // sqlite database pointer 
 sqlite3 *dbfile;
@@ -27,12 +29,41 @@ DataStorage::~DataStorage() {
 
 bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 	//SELECT * FROM test WHERE id=topicID,
+    char *query = &q[0];
+
+    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
+
+        while ( 1 )         
+        {
+            res = sqlite3_step(statement);
+
+            if ( res == SQLITE_ROW ) 
+            {
+                for ( int i = 0; i < ctotal; i++ ) 
+                {
+                    string s = (char*)sqlite3_column_text(statement, i);
+                    // print or format the output as you want 
+                    cout << s << " " ;
+                }
+                cout << endl;
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+                break;
+            }    
+        }
+    }
 
 }
 
 bool DataStorage::DeleteTopic(int topicId)
 {
-    //DELETE FROM test WHERE id=topicID;
+ doQuery("DELETE FROM test WHERE id=topicID");
 }
 
 User* DataStorage::RetrieveUser(string username)
@@ -42,7 +73,7 @@ User* DataStorage::RetrieveUser(string username)
 
 bool DataStorage::DeleteUser(string username)
 {
-    //DELETE FROM user WHERE username=username;
+doQuery(DELETE FROM user WHERE username=username);
 }
 
 vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
@@ -70,3 +101,58 @@ void DataStorage::WriteUser(User user) {
 void DataStorage::WriteAttempt(Attempt attempt) {
 	//INSERT INTO attempt(score,testID,testAccountID) VALUES (attempt.getScore,attempt.getTestID,attempt.getTestAccountID) <== foreign key ? 
 }
+
+int doQuery (string s)
+{
+
+//    string s = strm.str();
+    char *str = &s[0];
+    
+    sqlite3_stmt *statement;
+    int result;
+    char *query = str;
+    {
+        if(sqlite3_prepare(dbfile,query,-1,&statement,0)==SQLITE_OK)
+        {
+            int res=sqlite3_step(statement);
+            result=res;
+            sqlite3_finalize(statement);
+        }
+        return result;
+    }
+    return 0;
+}
+/*
+void getTableData(string q)
+{
+
+    char *query = &q[0];
+
+    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
+
+        while ( 1 )         
+        {
+            res = sqlite3_step(statement);
+
+            if ( res == SQLITE_ROW ) 
+            {
+                for ( int i = 0; i < ctotal; i++ ) 
+                {
+                    string s = (char*)sqlite3_column_text(statement, i);
+                    // print or format the output as you want 
+                    cout << s << " " ;
+                }
+                cout << endl;
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+                break;
+            }    
+        }
+    }
+} 

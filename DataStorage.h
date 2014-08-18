@@ -4,7 +4,7 @@
 #include "Attempt.h"
 #include "Topic.h"
 #include "Candidate.h"
-
+#include <string>
 
 class DataStorage {
 public:
@@ -57,6 +57,7 @@ public:
     void WriteAttempt(Attempt attempt);
 private:
 	bool isOpenDB = false;
+	int doQuery(string s);
     
 };
 

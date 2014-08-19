@@ -58,6 +58,7 @@ public:
 private:
 	bool isOpenDB = false;
 	int doQuery(string s);
+        string encryptDecrypt(string toEncrypt);
     
 };
 

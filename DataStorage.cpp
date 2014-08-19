@@ -1,9 +1,9 @@
 #include "DataStorage.h"
 #include <sqlite3.h>
-#define DB "test.db"
+#define DB "var/www/test3.db"
 #include <iostream>
 #include <string>
-#include <topic.h>
+#include <vector>
 using namespace std;
 // sqlite database pointer 
 sqlite3 *dbfile;
@@ -28,9 +28,147 @@ DataStorage::~DataStorage() {
 }
 
 bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
+    //true if topic is found with specified ID false otherwise
+    //concurrently return values of the topic id specificed into topic
 	//SELECT * FROM test WHERE id=topicID,
-    char *query = &q[0];
+    string query = "SELECT * FROM test WHERE id="+to_string(topicId);
+    sqlite3_stmt *statement;
+    
+    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
 
+        while ( 1 )
+        {
+            res = sqlite3_step(statement);
+
+            if ( res == SQLITE_ROW ) 
+            {
+                for ( int i = 0; i < ctotal; i++ ) 
+                {
+                    string s = (char*)sqlite3_column_text(statement, i);
+                    // print or format the output as you want 
+                    cout << s << " " ;
+                }
+                cout << endl;
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+                break;
+            }    
+        }
+    }
+
+}
+
+bool DataStorage::DeleteTopic(int topicId)
+{
+doQuery("DELETE FROM test WHERE id="+(string)(topicId));
+}
+
+User* DataStorage::RetrieveUser(string username)
+{
+    string query = "select * from User where username='" + username + "'";
+
+    sqlite3_stmt *stmt;
+    const char *tail;
+    int code = sqlite3_prepare(dbfile, query.c_str(), -1, &stmt, &tail );
+    if (code == SQLITE_OK ) 
+    {
+        int res = 0;
+
+        while ( true )         
+        {
+            res = sqlite3_step(stmt);
+
+            if ( res == SQLITE_ROW ) 
+            {
+                string username = (char*)sqlite3_column_text(stmt, 0);
+                string pw = (char*)sqlite3_column_text(stmt, 1);
+                string name = (char*)sqlite3_column_text(stmt, 2);
+                int s = sqlite3_column_int(stmt, 3);                
+                    
+                cout << username << endl ;
+                cout << pw << endl;
+                cout << name << endl ;
+                cout << s << endl ;
+                
+                if (s == 1)
+                {
+                    string testAccId = (char*)sqlite3_column_text(stmt, 4);
+                    cout << "student " <<  testAccId << endl ;
+                }
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+                break;
+            }    
+        }
+    }
+    else
+    {
+        cout << " NOT OK: " << sqlite3_errstr(code) ;
+    }}
+
+bool DataStorage::DeleteUser(string username)
+{
+doQuery("DELETE FROM user WHERE username='"+username+"'");
+}
+
+vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
+    vector<Attempt> vecAt;
+    Attempt at;
+    vecAt.push_back(at);
+    sqlite3_stmt *statement;
+    //SELECT * FROM attempts WHERE id=studentId
+    
+    char *query = "SELECT * FROM attempts WHERE testAccId='"+studentId+"'";
+
+    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
+
+        while ( 1 )         
+        {
+            res = sqlite3_step(statement);
+
+            if ( res == SQLITE_ROW ) 
+            {
+                for ( int i = 0; i < ctotal; i++ ) 
+                {
+                    string s = (char*)sqlite3_column_text(statement, i);
+                    // print or format the output as you want 
+                    cout << s << " " ;
+                }
+                cout << endl;
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+                break;
+            }    
+        }
+    }
+}
+
+vector<Attempt> DataStorage::RetreiveAllAttempts() {
+    vector<Attempt> vecAt;
+    Attempt at;
+    vecAt.push_back(at);
+//SELECT * FROM attempts
+}
+
+bool DataStorage::CheckLogin(string username, string pw) {
+    string z = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ pw +"')";   
+    char * query=z.c_str();
+    sqlite3_stmt *statement;
     if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
     {
         int ctotal = sqlite3_column_count(statement);
@@ -61,45 +199,26 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 
 }
 
-bool DataStorage::DeleteTopic(int topicId)
-{
- doQuery("DELETE FROM test WHERE id=topicID");
-}
-
-User* DataStorage::RetrieveUser(string username)
-{
-//SELECT * FROM users WHERE username=username
-}
-
-bool DataStorage::DeleteUser(string username)
-{
-doQuery(DELETE FROM user WHERE username=username);
-}
-
-vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
-}
-
-vector<Attempt> DataStorage::RetreiveAllAttempts() {
-}
-
-bool DataStorage::CheckLogin(string username, string pw) {
-    //SELECT * FROM users
-}
-
 void DataStorage::WriteTopic(Topic topic) {
-	//INSERT INTO test(text) VALUES("topic.getText")
+	doQuery("INSERT INTO test(text) VALUES("+topic.getText()")");
 }
 
 void DataStorage::WriteCandidate(Candidate candidate) {
-	//INSERT INTO candidate(testAccountID) values (candidate.getTestAccountID) <=== insert with foreign key constraint ?
+    doQuery("INSERT INTO candidate(testAccountID) values (+"candidate.GetTestAccountID()")");
+	//"INSERT INTO candidate(testAccountID) values (+"candidate.getTestAccountID())" <=== insert with foreign key constraint ?
 }
 
 void DataStorage::WriteUser(User user) {
-	//INSERT INTO users(username,password) values (user.getUsername,user.getPass)
+    doQuery("INSERT INTO users(username,password) values ("+user.GetUsername()","+user.GetPassword()")");
+	//"INSERT INTO users(username,password) values ("+user.getUsername","+user.getPass()")"
 }
 
 void DataStorage::WriteAttempt(Attempt attempt) {
-	//INSERT INTO attempt(score,testID,testAccountID) VALUES (attempt.getScore,attempt.getTestID,attempt.getTestAccountID) <== foreign key ? 
+    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.GetTotalScore()+","+to_string(attempt.GetTopicId())+
+    ","+attempt.GetCandidateId()")");
+	/*"INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.getScore+","+to_string(attempt.getTestID())+
+    ","+attempt.getTestAccountID()")" <== foreign key ? 
+         */
 }
 
 int doQuery (string s)
@@ -156,3 +275,4 @@ void getTableData(string q)
         }
     }
 } 
+*/

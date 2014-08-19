@@ -66,7 +66,7 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 
 bool DataStorage::DeleteTopic(int topicId)
 {
-doQuery("DELETE FROM test WHERE id="+(string)(topicId));
+doQuery("DELETE FROM test WHERE id="+to_string(topicId));
 }
 
 User* DataStorage::RetrieveUser(string username)
@@ -127,9 +127,9 @@ vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
     sqlite3_stmt *statement;
     //SELECT * FROM attempts WHERE id=studentId
     
-    char *query = "SELECT * FROM attempts WHERE testAccId='"+studentId+"'";
+    string query = "SELECT * FROM attempts WHERE testAccId='"+studentId+"'";
 
-    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
     {
         int ctotal = sqlite3_column_count(statement);
         int res = 0;
@@ -166,10 +166,9 @@ vector<Attempt> DataStorage::RetreiveAllAttempts() {
 }
 
 bool DataStorage::CheckLogin(string username, string pw) {
-    string z = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ pw +"')";   
-    char * query=z.c_str();
+    string query = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ pw +"')";   
     sqlite3_stmt *statement;
-    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
     {
         int ctotal = sqlite3_column_count(statement);
         int res = 0;
@@ -200,28 +199,28 @@ bool DataStorage::CheckLogin(string username, string pw) {
 }
 
 void DataStorage::WriteTopic(Topic topic) {
-	doQuery("INSERT INTO test(text) VALUES("+topic.getText()")");
+	doQuery("INSERT INTO test(text) VALUES("+to_string(topic.GetId())+")");
 }
 
 void DataStorage::WriteCandidate(Candidate candidate) {
-    doQuery("INSERT INTO candidate(testAccountID) values (+"candidate.GetTestAccountID()")");
+    doQuery("INSERT INTO candidate(testAccountID) values ('"+candidate.GetTestAccountID()+"')");
 	//"INSERT INTO candidate(testAccountID) values (+"candidate.getTestAccountID())" <=== insert with foreign key constraint ?
 }
 
 void DataStorage::WriteUser(User user) {
-    doQuery("INSERT INTO users(username,password) values ("+user.GetUsername()","+user.GetPassword()")");
+    doQuery("INSERT INTO users(username,password) values ('"+user.GetUsername()+","+user.GetPassword()+"')");
 	//"INSERT INTO users(username,password) values ("+user.getUsername","+user.getPass()")"
 }
 
 void DataStorage::WriteAttempt(Attempt attempt) {
-    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.GetTotalScore()+","+to_string(attempt.GetTopicId())+
-    ","+attempt.GetCandidateId()")");
+    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ("+to_string(attempt.GetTotalScore())+","+to_string(attempt.GetTopicId())+
+    ","+attempt.GetCandidateId()+")");
 	/*"INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.getScore+","+to_string(attempt.getTestID())+
     ","+attempt.getTestAccountID()")" <== foreign key ? 
          */
 }
 
-int doQuery (string s)
+int DataStorage::doQuery (string s)
 {
 
 //    string s = strm.str();

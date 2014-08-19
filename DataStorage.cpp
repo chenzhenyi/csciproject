@@ -122,7 +122,7 @@ User* DataStorage::RetrieveUser(string username)
                     User u;
                     u.SetName(name);
                     u.SetPassword(pw);
-                    u.SetType(1);
+                    u.SetType(0);
                     u.SetUsername(username);
                     
                     user = &u;

@@ -52,8 +52,8 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
                 Question q;
                 topic.SetTotalMarks(sqlite3_column_int(statement, 1));
                 q.SetMarks((sqlite3_column_int(statement, 1)));
-                q.SetAnswer(sqlite3_column_int(statement, 6))
-                q.SetQuestion(sqlite3_column_int(statement, 1))
+//                q.SetAnswer((char*)sqlite3_column_text(statement, 6));
+//                q.SetQuestion((char*)sqlite3_column_int(statement, 1))
                 topic.AddQuestion(q);
                  
             if ( res == SQLITE_ROW ) 
@@ -150,8 +150,8 @@ vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
                 for ( int i = 0; i < ctotal; i++ ) 
                 {
                     Attempt at;
-                    at.SetTopicId(sqlite3_column_text(statement, 0));
-                    at.SetTotalScore(sqlite3_column_text(statement, 2));
+                    at.SetTopicId(sqlite3_column_int(statement, 0));
+                    at.SetTotalScore(sqlite3_column_int(statement, 2));
                     vecAt.push_back(at);
 //                    string s = (char*)sqlite3_column_text(statement, i);
                     // print or format the output as you want 
@@ -169,11 +169,37 @@ vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
 }
 
 vector<Attempt> DataStorage::RetreiveAllAttempts() {
+
+        string query = "SELECT * FROM Attempt";   
+    sqlite3_stmt *statement;
+    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
+
+        while ( 1 )         
+        {
+            res = sqlite3_step(statement);
     vector<Attempt> vecAt;
-    Attempt at;
-    vecAt.push_back(at);
-//SELECT * FROM attempts
-}
+
+            if ( res == SQLITE_ROW ) 
+            { 
+                    Attempt at;
+                    at.SetCandidateId((char*)sqlite3_column_text(statement, 1));
+                    at.SetTopicId(sqlite3_column_int(statement, 0));
+                    at.SetTotalScore(sqlite3_column_int(statement, 2));
+                    vecAt.push_back(at);
+
+                }
+
+            }
+            
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                cout << "done " << endl;
+            }    
+        }
+    }
 
 bool DataStorage::CheckLogin(string username, string pw) {
     string query = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ encryptDecrypt(pw) +"')";   
@@ -189,17 +215,21 @@ bool DataStorage::CheckLogin(string username, string pw) {
 
             if ( res == SQLITE_ROW ) 
             {
+                return true;
+                /*
                 string u = (char*)sqlite3_column_text(statement, 0);
                 string p = (char*)sqlite3_column_text(statement, 1);              
                     
                 cout << u << endl;
                 cout << p << endl;
-                
-                if(u==username&&p=pw){
+                cout << username << endl;
+                cout << pw << endl;
+                if(u==username&&p==pw){
                     return true;
                 }
                 else
                     return false;
+                */
 
             }
             
@@ -214,7 +244,7 @@ bool DataStorage::CheckLogin(string username, string pw) {
 }
 
 void DataStorage::WriteTopic(Topic topic) {
-	doQuery("INSERT INTO test(text) VALUES("+to_string(topic.GetId())+","+topic.GetTotalMarks()+)")";
+	doQuery("INSERT INTO test(text) VALUES('"+to_string(topic.GetId())+"','"+to_string(topic.GetTotalMarks())+"')");
 }
 
 void DataStorage::WriteCandidate(Candidate candidate) {
@@ -223,13 +253,13 @@ void DataStorage::WriteCandidate(Candidate candidate) {
 }
 
 void DataStorage::WriteUser(User user) {
-    doQuery("INSERT INTO users(username,password) values ('"+user.GetUsername()+","+user.GetPassword()+"')");
+    doQuery("INSERT INTO users(username,password) values ('"+user.GetUsername()+"','"+encryptDecrypt(user.GetPassword())+"')");
 	//"INSERT INTO users(username,password) values ("+user.getUsername","+user.getPass()")"
 }
 
 void DataStorage::WriteAttempt(Attempt attempt) {
-    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ("+to_string(attempt.GetTotalScore())+","+to_string(attempt.GetTopicId())+
-    ","+attempt.GetCandidateId()+")");
+    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ('"+to_string(attempt.GetTotalScore())+"','"+to_string(attempt.GetTopicId())+
+    "','"+attempt.GetCandidateId()+"')");
 	/*"INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.getScore+","+to_string(attempt.getTestID())+
     ","+attempt.getTestAccountID()")" <== foreign key ? 
          */
@@ -237,8 +267,6 @@ void DataStorage::WriteAttempt(Attempt attempt) {
 
 int DataStorage::doQuery (string s)
 {
-
-//    string s = strm.str();
     char *str = &s[0];
     
     sqlite3_stmt *statement;

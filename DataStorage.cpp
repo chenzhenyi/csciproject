@@ -9,10 +9,11 @@ using namespace std;
 sqlite3 *dbfile;
 
 DataStorage::DataStorage() {
-    if ( sqlite3_open(DB, &dbfile) == SQLITE_OK )
+    auto code = sqlite3_open(DB, &dbfile);
+    if ( code == SQLITE_OK )
     {
         isOpenDB = true;
-        cout << "Connection Sucuess"<<endl;
+        cout << "Connection Success"<<endl;
     }         
     else
     cout << "Connection Failed"<<endl;
@@ -80,6 +81,7 @@ doQuery("DELETE FROM topic WHERE id="+to_string(topicId));
 
 User* DataStorage::RetrieveUser(string username)
 {
+    User * user = NULL;
     string query = "select * from User where username='" + username + "'";
 
     sqlite3_stmt *stmt;
@@ -98,23 +100,37 @@ User* DataStorage::RetrieveUser(string username)
                 string username = (char*)sqlite3_column_text(stmt, 0);
                 string pw = (char*)sqlite3_column_text(stmt, 1);
                 string name = (char*)sqlite3_column_text(stmt, 2);
-                int s = sqlite3_column_int(stmt, 3);                
-                    
-                cout << username << endl ;
-                cout << pw << endl;
-                cout << name << endl ;
-                cout << s << endl ;
+                int s = sqlite3_column_int(stmt, 3);
                 
                 if (s == 1)
                 {
                     string testAccId = (char*)sqlite3_column_text(stmt, 4);
-                    cout << "student " <<  testAccId << endl ;
+                    cout << "Logged in as student " <<  testAccId << endl;
+                    
+                    Candidate c;
+                    c.SetName(name);
+                    c.SetPassword(pw);
+                    c.SetType(1);
+                    c.SetUsername(username);
+                    c.SetTestAccountID(testAccId);
+                    
+                    user = &c;
+                }
+                else
+                {
+                    cout << "Logged in as lecturer" << endl;
+                    User u;
+                    u.SetName(name);
+                    u.SetPassword(pw);
+                    u.SetType(1);
+                    u.SetUsername(username);
+                    
+                    user = &u;
                 }
             }
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
             {
-                cout << "done " << endl;
                 break;
             }    
         }
@@ -122,7 +138,10 @@ User* DataStorage::RetrieveUser(string username)
     else
     {
         cout << " NOT OK: " << sqlite3_errstr(code) ;
-    }}
+    }
+    
+    return user;
+}
 
 bool DataStorage::DeleteUser(string username)
 {
@@ -202,9 +221,10 @@ vector<Attempt> DataStorage::RetreiveAllAttempts() {
     }
 
 bool DataStorage::CheckLogin(string username, string pw) {
-    string query = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ encryptDecrypt(pw) +"')";   
+    string query = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ encryptDecrypt(pw) +"'";   
     sqlite3_stmt *statement;
-    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
+    auto code  =sqlite3_prepare_v2(dbfile, query.c_str(), -1, &statement, 0 );
+    if ( code == SQLITE_OK ) 
     {
         int ctotal = sqlite3_column_count(statement);
         int res = 0;
@@ -216,21 +236,6 @@ bool DataStorage::CheckLogin(string username, string pw) {
             if ( res == SQLITE_ROW ) 
             {
                 return true;
-                /*
-                string u = (char*)sqlite3_column_text(statement, 0);
-                string p = (char*)sqlite3_column_text(statement, 1);              
-                    
-                cout << u << endl;
-                cout << p << endl;
-                cout << username << endl;
-                cout << pw << endl;
-                if(u==username&&p==pw){
-                    return true;
-                }
-                else
-                    return false;
-                */
-
             }
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
@@ -239,6 +244,11 @@ bool DataStorage::CheckLogin(string username, string pw) {
                 break;
             }    
         }
+    }
+    else
+    {
+        cout << "SQLite error: " << sqlite3_errstr(code) << endl;
+        cout << sqlite3_errstr(sqlite3_step(statement));
     }
 
 }

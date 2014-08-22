@@ -50,18 +50,22 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
         {
             res = sqlite3_step(statement);
             vector<string> qOpt;
+            //this part only as many times as the topic id changes. 
                 Question q;
                 topic.SetTotalMarks(sqlite3_column_int(statement, 1));
                 q.SetMarks((sqlite3_column_int(statement, 1)));
-//                q.SetAnswer((char*)sqlite3_column_text(statement, 6));
-//                q.SetQuestion((char*)sqlite3_column_int(statement, 1))
+                q.SetAnswer(sqlite3_column_text(statement, 5));
+                q.SetQuestion(sqlite3_column_int(statement, 5));
                 topic.AddQuestion(q);
+                //end
                  
             if ( res == SQLITE_ROW ) 
             {
-                
+                //this part run as many rows as long as the topic id is the same
+                qOpt.push_back(sqlite3_column_text(statement, 7));
 
             }
+                //this part runs as soon as the above part is finished
                 q.SetOptions(qOpt);
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
@@ -76,7 +80,8 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 
 bool DataStorage::DeleteTopic(int topicId)
 {
-doQuery("DELETE FROM topic WHERE id="+to_string(topicId));
+     doQuery("DELETE * FROM topic INNER JOIN Question ON topic.topicId=Question.topicId INNER JOIN QuestionOption ON Question.questionId=QuestionOption.questionId where topic.topicId="+to_string(topicId));
+
 }
 
 User* DataStorage::RetrieveUser(string username)

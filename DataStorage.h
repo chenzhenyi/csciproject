@@ -9,7 +9,6 @@
 class DataStorage {
 public:
     DataStorage();
-    DataStorage(const DataStorage& orig);
     virtual ~DataStorage();
     
     /**

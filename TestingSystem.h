@@ -6,7 +6,6 @@
 class TestingSystem {
 public:
     TestingSystem();
-    TestingSystem(const TestingSystem& orig);
     virtual ~TestingSystem();
     
     void CandidateMainMenu(Candidate* candidate);

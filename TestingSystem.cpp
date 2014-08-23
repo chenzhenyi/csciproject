@@ -8,9 +8,6 @@ using namespace std;
 TestingSystem::TestingSystem() {
 }
 
-TestingSystem::TestingSystem(const TestingSystem& orig) {
-}
-
 TestingSystem::~TestingSystem() {
 }
 
@@ -282,11 +279,11 @@ Attempt TestingSystem::TakeTestUI()
     
     attempt.SetTopicId(topic.GetId());
     attempt.SetAnswers(answers);
-    attempt.CalculateTotalScore();
+    attempt.CalculateTotalScore(topic);
     
     cout << "Total score: " << attempt.GetTotalScore() << endl;
     
-    return attempt;
+     return attempt;
     //ds.WriteAttempt(attempt);
 }
 

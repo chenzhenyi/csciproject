@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <string.h>
 using namespace std;
 // sqlite database pointer 
 sqlite3 *dbfile;
@@ -17,9 +18,6 @@ DataStorage::DataStorage() {
     }         
     else
     cout << "Connection Failed"<<endl;
-}
-
-DataStorage::DataStorage(const DataStorage& orig) {
 }
 
 DataStorage::~DataStorage() {
@@ -38,8 +36,10 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 1	25	1	1	25	How high is the sky	1	2
 1	25	1	1	25	How high is the sky	1	3
 1	25	1	1	25	How high is the sky	1	4*/
-    string query = "SELECT * FROM topic INNER JOIN Question ON topic.topicId=Question.topicId INNER JOIN QuestionOption ON Question.questionId=QuestionOption.questionId where topic.topicId="+to_string(topicId);
+    //string query = "SELECT * FROM topic INNER JOIN Question ON topic.topicId=Question.topicId INNER JOIN QuestionOption ON Question.questionId=QuestionOption.questionId where topic.topicId="+to_string(topicId);
     sqlite3_stmt *statement;
+    
+    string query = "select * from topic where topicid=" + to_string(topicId);
     
     if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
     {
@@ -49,33 +49,105 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
         while ( 1 )
         {
             res = sqlite3_step(statement);
-            vector<string> qOpt;
-            //this part only as many times as the topic id changes. 
-                Question q;
-                topic.SetTotalMarks(sqlite3_column_int(statement, 1));
-                q.SetMarks((sqlite3_column_int(statement, 1)));
-                q.SetAnswer(sqlite3_column_text(statement, 5));
-                q.SetQuestion(sqlite3_column_int(statement, 5));
-                topic.AddQuestion(q);
-                //end
-                 
+            
             if ( res == SQLITE_ROW ) 
             {
-                //this part run as many rows as long as the topic id is the same
-                qOpt.push_back(sqlite3_column_text(statement, 7));
-
+                topic.SetId(sqlite3_column_int(statement, 0));
+                topic.SetTotalMarks(sqlite3_column_int(statement, 1));
             }
-                //this part runs as soon as the above part is finished
-                q.SetOptions(qOpt);
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
             {
-                cout << "done " << endl;
+                //cout << "done " << endl;
                 break;
             }    
         }
     }
+    
+    sqlite3_finalize(statement);
+    
+    query = "select questionId,marks, question, answer from question where topicid=" + to_string(topicId);
+    
+    vector<Question> questions;
+    
+    if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
+    {
+        int ctotal = sqlite3_column_count(statement);
+        int res = 0;
 
+        while ( 1 )
+        {
+            Question q;
+            
+            res = sqlite3_step(statement);
+            
+            if ( res == SQLITE_ROW ) 
+            {
+                q.SetId(sqlite3_column_int(statement, 0));
+                //const char * question = sqlite3_column_text(statement, 2);
+                //question, strnlen(question, 512)
+                q.SetQuestion(string(reinterpret_cast<const char*>(sqlite3_column_text(statement, 2))));
+                q.SetMarks(sqlite3_column_int(statement, 1));
+                q.SetAnswer(sqlite3_column_text(statement, 3)[0]);
+                
+                questions.push_back(q);
+            }         
+                        
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            {
+                //cout << "done " << endl;
+                break;
+            }    
+        }
+    }
+    else
+    {
+        cout << "ERROR: " << sqlite3_errmsg(dbfile) << endl;
+        return false;
+    }
+    
+    sqlite3_finalize(statement);
+    
+    for (int i=0; i < questions.size(); i++)
+    {
+        query = "select answer from QuestionOption where questionId=" + to_string(questions[i].GetId()) + " order by rowid";
+    
+        vector<string> options;
+        
+        Question q = questions[i];
+
+        if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
+        {
+            int ctotal = sqlite3_column_count(statement);
+            int res = 0;
+
+            while ( 1 )
+            {
+                res = sqlite3_step(statement);
+                
+                if ( res == SQLITE_ROW ) 
+                {
+                    options.push_back(string(reinterpret_cast<const char*>(sqlite3_column_text(statement, 0))));
+                }
+
+                if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+                {
+                    //cout << "done " << endl;
+                    break;
+                }    
+            }
+            
+            q.SetOptions(options);
+        }
+        else
+        {
+            return false;
+        }
+        
+        questions[i] = q;
+    }
+    
+    topic.SetQuestions(questions);
 }
 
 bool DataStorage::DeleteTopic(int topicId)
@@ -112,25 +184,25 @@ User* DataStorage::RetrieveUser(string username)
                     string testAccId = (char*)sqlite3_column_text(stmt, 4);
                     cout << "Logged in as student " <<  testAccId << endl;
                     
-                    Candidate c;
-                    c.SetName(name);
-                    c.SetPassword(pw);
-                    c.SetType(1);
-                    c.SetUsername(username);
-                    c.SetTestAccountID(testAccId);
+                    Candidate * c = new Candidate();
+                    c->SetName(name);
+                    c->SetPassword(pw);
+                    c->SetType(1);
+                    c->SetUsername(username);
+                    c->SetTestAccountID(testAccId);
                     
-                    user = &c;
+                    user = c;
                 }
                 else
                 {
                     cout << "Logged in as lecturer" << endl;
-                    User u;
-                    u.SetName(name);
-                    u.SetPassword(pw);
-                    u.SetType(0);
-                    u.SetUsername(username);
+                    User *u = new User();
+                    u->SetName(name);
+                    u->SetPassword(pw);
+                    u->SetType(0);
+                    u->SetUsername(username);
                     
-                    user = &u;
+                    user = u;
                 }
             }
             
@@ -282,6 +354,7 @@ void DataStorage::WriteAttempt(Attempt attempt) {
 
 int DataStorage::doQuery (string s)
 {
+    /*
     char *str = &s[0];
     
     sqlite3_stmt *statement;
@@ -296,6 +369,7 @@ int DataStorage::doQuery (string s)
         }
         return result;
     }
+     * */
     return 0;
 }
 

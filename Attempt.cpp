@@ -13,9 +13,6 @@
 Attempt::Attempt() {
 }
 
-Attempt::Attempt(const Attempt& orig) {
-}
-
 Attempt::~Attempt() {
 }
 
@@ -51,20 +48,19 @@ vector<char> Attempt::GetAnswers() const {
     return answers;
 }
 
-int Attempt::CalculateTotalScore()
+int Attempt::CalculateTotalScore(Topic t)
 {
     int score = 0;
     
-    // TODO: retrieve topic from Id
-    Topic t;
     vector<Question> questions = t.GetQuestions();
     
     // at this point it is assumed that the topic retrived is the right
     // topic for the attempt
     for (int i=0; i<answers.size();i++)
     {
-        if (questions[i].CheckAnswer(i))
-            score += questions[i].GetMarks();
+        Question q = questions[i];
+        if (q.CheckAnswer(answers[i]))
+            score += q.GetMarks();
     }
     
     totalScore = score;

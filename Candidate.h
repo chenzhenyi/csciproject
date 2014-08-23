@@ -7,7 +7,6 @@ class Candidate: public User
 {
 public:
     Candidate();
-    Candidate(const Candidate& orig);
     virtual ~Candidate();
     void SetTestAccountID(string testAccountID);
     string GetTestAccountID() const;

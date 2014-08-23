@@ -7,9 +7,6 @@ using namespace std;
 Topic::Topic() {
 }
 
-Topic::Topic(const Topic& orig) {
-}
-
 Topic::~Topic() {
 }
 

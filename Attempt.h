@@ -3,13 +3,13 @@
 
 #include <string>
 #include <vector>
+#include "Topic.h"
 
 using namespace std;
 
 class Attempt {
 public:
     Attempt();
-    Attempt(const Attempt& orig);
     virtual ~Attempt();
     
     void SetTotalScore(int totalScore);
@@ -21,7 +21,7 @@ public:
     void SetAnswers(vector<char> answers);
     vector<char> GetAnswers() const;
     
-    int CalculateTotalScore();
+    int CalculateTotalScore(Topic t);
     void PrintAttemptResult();
 private:
     int topicId;

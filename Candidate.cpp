@@ -10,9 +10,6 @@
 Candidate::Candidate() {
 }
 
-Candidate::Candidate(const Candidate& orig) {
-}
-
 Candidate::~Candidate() {
 }
 

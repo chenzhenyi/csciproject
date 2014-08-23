@@ -13,9 +13,6 @@ Question::Question(string question, vector<string> options, char answer, int mar
     
 }
 
-Question::Question(const Question& orig) {
-}
-
 Question::~Question() {
 }
 
@@ -53,7 +50,7 @@ string Question::GetQuestion() const {
 
 bool Question::CheckAnswer(char answer)
 {
-    
+    return answer == this->answer;
 }
     
 void Question::Print()
@@ -62,6 +59,14 @@ void Question::Print()
     
     for (int i=0; i < options.size(); i++)
     {
-        cout << 'a' + i << options[i] << endl;
+        cout << (char)('a' + i) << options[i] << endl;
     }
+}
+
+void Question::SetId(int id) {
+    this->id = id;
+}
+
+int Question::GetId() const {
+    return id;
 }

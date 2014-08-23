@@ -10,7 +10,7 @@ class Question {
 public:
     Question();
     Question(string question, vector<string> options, char answer, int marks);
-    Question(const Question& orig);
+    
     virtual ~Question();
     
     void SetMarks(int marks);
@@ -34,7 +34,10 @@ public:
         Pretty print the question.
     */
     void Print();
+    void SetId(int id);
+    int GetId() const;
 private:
+    int id;
     string question;
     vector<string> options;
     char answer;

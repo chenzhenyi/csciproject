@@ -9,9 +9,6 @@ User::User(string username, string pw, string name, int type):
 {
 }
 
-User::User(const User& orig) {
-}
-
 User::~User() {
 }
 

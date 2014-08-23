@@ -16,7 +16,6 @@ using namespace std;
 class Topic {
 public:
     Topic();
-    Topic(const Topic& orig);
     virtual ~Topic();
     
     void SetTotalMarks(int totalMarks);

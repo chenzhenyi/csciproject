@@ -9,7 +9,6 @@ class User {
 public:
     User();
     User(string username, string pw, string name, int type);
-    User(const User& orig);
     virtual ~User();
 
     void SetType(int type) {

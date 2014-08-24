@@ -61,6 +61,7 @@ void TestingSystem::LecturerMainMenu(User* user)
     int id;
     Candidate c;
     string username;
+    Candidate *pc;
     
     switch (choice)
     {
@@ -69,8 +70,9 @@ void TestingSystem::LecturerMainMenu(User* user)
             ds.WriteCandidate(c);
             break;
         case 2:
-            c = ModifyCandidateUI();
-            ds.WriteCandidate(c);
+            pc = ModifyCandidateUI();
+            if (pc != NULL)
+                ds.WriteCandidate(*pc);
             break;
         case 3:
             username = DeleteCandidateUI();
@@ -166,20 +168,22 @@ void TestingSystem::LoginUI()
 
 Topic TestingSystem::CreateTopicUI()
 {
-    // TODO: ask for a new question (loop), insert, calc total marks
     Topic topic;
     
     bool done = false;
     while (!done)
-    {
-        int questionNo; // index, starts from 0
-        cout << "Enter a new question: ";
-        cin >> questionNo;
-        
-        // simply create new question and over write the old one
+    {      
         Question q = CreateQuestionUI();
-        topic.ReplaceQuestion(questionNo, q);
+        
+        topic.AddQuestion(q);
+        
+        char cont;
+        cout << "Add more questions? (y/n) ";
+        cin >> cont;
+        
+        done = cont == 'n';
     }
+    
     
     topic.CalcTotalMarks();
     return topic;
@@ -218,16 +222,16 @@ Question TestingSystem::CreateQuestionUI()
 {
     string question;
     vector<string> options;
-    
+    std::getline(std::cin, question); // hack
     cout << "Enter question: ";
-    cin >> question;
+    std::getline(std::cin, question);
     
     bool done = false;
     while (!done)
     {
         string option;
         cout << "Enter an option: ";
-        cin >> option;
+        std::getline(std::cin, option);
         
         options.push_back(option);
         
@@ -236,6 +240,8 @@ Question TestingSystem::CreateQuestionUI()
         cin >> cont;
         
         done = cont == 'n';
+        
+        std::getline(std::cin, option); // hack
     }
     
     char answer;
@@ -289,12 +295,52 @@ Attempt TestingSystem::TakeTestUI()
 
 Candidate TestingSystem::CreateCandiateUI()
 {
+    Candidate c;
+    string username;
+    cout << "Enter candidate's username: ";
+    cin >> username;
+    string password;
+    cout << "Enter new password: ";
+    cin >> password;
+    string name;
+    cout << "Enter name: ";
+    cin >> name;
+    string testAccId;
+    cout << "Enter test account ID: ";
+    cin >> testAccId;
     
+    c.SetUsername(username);
+    c.SetPassword(password);
+    c.SetName(name);
+    c.SetType(1);
+    c.SetTestAccountID(testAccId);
+    
+    return c;
 }
     
-Candidate TestingSystem::ModifyCandidateUI()
+Candidate* TestingSystem::ModifyCandidateUI()
 {
+    string username;
+    cout << "Enter candidate's username: ";
+    cin >> username;
     
+    User * u = (User*)ds.RetrieveUser(username);
+    if (u == NULL)
+    {
+        cout << "Username does not exist" << endl;
+        return NULL;
+    }
+    
+    if (u->GetType() != 1)
+    {
+        cout << "Username is not candidate" << endl;
+        return NULL;
+    }
+    
+    Candidate *c = new Candidate();
+    *c = CreateCandiateUI(); 
+    
+    return c;
 }
     
 string TestingSystem::DeleteCandidateUI()
@@ -313,7 +359,7 @@ void TestingSystem::ShowCandiateResults()
     cin >> testAccountID;
     
     vector<Attempt> attempts = ds.RetreiveAttempts(testAccountID);
-    
+    cout << "candidateId" << "   "  << "topicId" << "   " << "totalScore" << endl;
     for (int i=0; i<attempts.size(); i++)
     {
         attempts[i].PrintAttemptResult();
@@ -323,6 +369,7 @@ void TestingSystem::ShowCandiateResults()
 void TestingSystem::ShowAllResults()
 {
     vector<Attempt> attempts = ds.RetreiveAllAttempts();
+    cout << "candidateId" << "   "  << "topicId" << "   " << "totalScore" << endl;
     for (int i=0; i<attempts.size(); i++)
     {
         attempts[i].PrintAttemptResult();

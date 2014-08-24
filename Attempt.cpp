@@ -69,5 +69,5 @@ int Attempt::CalculateTotalScore(Topic t)
 
 void Attempt::PrintAttemptResult()
 {
-    cout << candidateId << "   "  << topicId << "   " << totalScore;
+    cout << candidateId << "   "  << topicId << "   " << totalScore << endl;
 }

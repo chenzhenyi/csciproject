@@ -30,13 +30,6 @@ DataStorage::~DataStorage() {
 bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
     //true if topic is found with specified ID false otherwise
     //concurrently return values of the topic id specificed into topic
-	//SELECT * FROM test WHERE id=topicID,
-/*topicId	totalMarks	questionId	topicId	marks	question	questionId	answer
-1	25	1	1	25	How high is the sky	1	1
-1	25	1	1	25	How high is the sky	1	2
-1	25	1	1	25	How high is the sky	1	3
-1	25	1	1	25	How high is the sky	1	4*/
-    //string query = "SELECT * FROM topic INNER JOIN Question ON topic.topicId=Question.topicId INNER JOIN QuestionOption ON Question.questionId=QuestionOption.questionId where topic.topicId="+to_string(topicId);
     sqlite3_stmt *statement;
     
     string query = "select * from topic where topicid=" + to_string(topicId);
@@ -84,8 +77,6 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
             if ( res == SQLITE_ROW ) 
             {
                 q.SetId(sqlite3_column_int(statement, 0));
-                //const char * question = sqlite3_column_text(statement, 2);
-                //question, strnlen(question, 512)
                 q.SetQuestion(string(reinterpret_cast<const char*>(sqlite3_column_text(statement, 2))));
                 q.SetMarks(sqlite3_column_int(statement, 1));
                 q.SetAnswer(sqlite3_column_text(statement, 3)[0]);
@@ -222,7 +213,7 @@ User* DataStorage::RetrieveUser(string username)
 
 bool DataStorage::DeleteUser(string username)
 {
-doQuery("DELETE FROM user WHERE username='"+username+"'");
+        doQuery("DELETE FROM user WHERE username='"+username+"'");
 }
 
 vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
@@ -243,16 +234,11 @@ vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
 
             if ( res == SQLITE_ROW ) 
             {
-                for ( int i = 0; i < ctotal; i++ ) 
-                {
-                    Attempt at;
-                    at.SetTopicId(sqlite3_column_int(statement, 0));
-                    at.SetTotalScore(sqlite3_column_int(statement, 2));
-                    vecAt.push_back(at);
-//                    string s = (char*)sqlite3_column_text(statement, i);
-                    // print or format the output as you want 
-                }
-                return vecAt;
+                Attempt at;
+                at.SetTopicId(sqlite3_column_int(statement, 0));
+                at.SetCandidateId((char*)sqlite3_column_text(statement, 1));
+                at.SetTotalScore(sqlite3_column_int(statement, 2));
+                vecAt.push_back(at);
             }
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
@@ -262,11 +248,14 @@ vector<Attempt> DataStorage::RetreiveAttempts(string studentId) {
             }    
         }
     }
+    
+    return vecAt;
 }
 
-vector<Attempt> DataStorage::RetreiveAllAttempts() {
-
-        string query = "SELECT * FROM Attempt";   
+vector<Attempt> DataStorage::RetreiveAllAttempts() 
+{
+    vector<Attempt> vecAt;
+    string query = "SELECT * FROM Attempt";   
     sqlite3_stmt *statement;
     if ( sqlite3_prepare(dbfile, query.c_str(), -1, &statement, 0 ) == SQLITE_OK ) 
     {
@@ -276,26 +265,26 @@ vector<Attempt> DataStorage::RetreiveAllAttempts() {
         while ( 1 )         
         {
             res = sqlite3_step(statement);
-    vector<Attempt> vecAt;
-
+    
             if ( res == SQLITE_ROW ) 
             { 
-                    Attempt at;
-                    at.SetCandidateId((char*)sqlite3_column_text(statement, 1));
-                    at.SetTopicId(sqlite3_column_int(statement, 0));
-                    at.SetTotalScore(sqlite3_column_int(statement, 2));
-                    vecAt.push_back(at);
-
-                }
-
+                Attempt at;
+                at.SetCandidateId((char*)sqlite3_column_text(statement, 1));
+                at.SetTopicId(sqlite3_column_int(statement, 0));
+                at.SetTotalScore(sqlite3_column_int(statement, 2));
+                vecAt.push_back(at);
             }
             
             if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
             {
                 cout << "done " << endl;
-            }    
-        }
+                break;
+            } 
+        }           
     }
+    
+    return vecAt;
+}
 
 bool DataStorage::CheckLogin(string username, string pw) {
     string query = "SELECT * FROM user WHERE username='"+username+"' AND password='"+ encryptDecrypt(pw) +"'";   
@@ -331,46 +320,56 @@ bool DataStorage::CheckLogin(string username, string pw) {
 }
 
 void DataStorage::WriteTopic(Topic topic) {
-	doQuery("INSERT INTO test(text) VALUES('"+to_string(topic.GetId())+"','"+to_string(topic.GetTotalMarks())+"')");
+    doQuery("insert into Topic values(NULL," + to_string(topic.GetTotalMarks()) + ")");
+    
+    sqlite3_int64 topicid = sqlite3_last_insert_rowid(dbfile);
+    
+    vector<Question> questions = topic.GetQuestions();
+    for (int i=0; i<questions.size(); i++)
+    {
+        Question q = questions[i];
+        string answer(1,q.GetAnswer());
+        doQuery("insert into Question values(NULL," 
+                + to_string(topicid) + "," + to_string(q.GetMarks()) + ",'"
+                + q.GetQuestion() + "','" + answer + "')");
+        
+        sqlite3_int64 qid = sqlite3_last_insert_rowid(dbfile);
+        
+        vector <string> ans = q.GetOptions();
+        for (int j=0;j<ans.size();j++)
+        {
+            doQuery("insert into QuestionOption values(" + to_string(qid) + ",'" + ans[j] + "')");
+        }
+    }
 }
 
-void DataStorage::WriteCandidate(Candidate candidate) {
-    doQuery("INSERT INTO candidate(testAccountID) values ('"+candidate.GetTestAccountID()+"')");
-	//"INSERT INTO candidate(testAccountID) values (+"candidate.getTestAccountID())" <=== insert with foreign key constraint ?
+void DataStorage::WriteCandidate(Candidate c) {
+    doQuery("INSERT INTO User values ('"+c.GetUsername()+"', '"+ encryptDecrypt(c.GetPassword()) 
+            +"', '" + c.GetName() + "'," + to_string(c.GetType()) + " , '" + c.GetTestAccountID() +"')");
 }
 
 void DataStorage::WriteUser(User user) {
-    doQuery("INSERT INTO users(username,password) values ('"+user.GetUsername()+"','"+encryptDecrypt(user.GetPassword())+"')");
-	//"INSERT INTO users(username,password) values ("+user.getUsername","+user.getPass()")"
+    //doQuery("INSERT INTO users(username,password) values ('"+user.GetUsername()+"','"+encryptDecrypt(user.GetPassword())+"')");
 }
 
 void DataStorage::WriteAttempt(Attempt attempt) {
-    doQuery("INSERT INTO attempt(score,testID,testAccountID) VALUES ('"+to_string(attempt.GetTotalScore())+"','"+to_string(attempt.GetTopicId())+
-    "','"+attempt.GetCandidateId()+"')");
-	/*"INSERT INTO attempt(score,testID,testAccountID) VALUES ("+attempt.getScore+","+to_string(attempt.getTestID())+
-    ","+attempt.getTestAccountID()")" <== foreign key ? 
-         */
+    doQuery("INSERT INTO attempt VALUES (" + to_string(attempt.GetTopicId())
+            + ",'" + attempt.GetCandidateId() + "'," + to_string(attempt.GetTotalScore()) +")");
 }
 
 int DataStorage::doQuery (string s)
-{
-    /*
-    char *str = &s[0];
-    
+{    
     sqlite3_stmt *statement;
-    int result;
-    char *query = str;
-    {
-        if(sqlite3_prepare(dbfile,query,-1,&statement,0)==SQLITE_OK)
-        {
-            int res=sqlite3_step(statement);
-            result=res;
-            sqlite3_finalize(statement);
-        }
-        return result;
-    }
-     * */
-    return 0;
+    int result = sqlite3_prepare(dbfile,s.c_str(),-1,&statement,0);
+    if (result != SQLITE_OK)
+        cout << "ERROR prep: " << sqlite3_errmsg(dbfile) << endl;
+    
+    result = sqlite3_step(statement);
+    if (result != SQLITE_DONE)
+        cout << "ERROR step: " << sqlite3_errmsg(dbfile) << endl;
+    
+    sqlite3_finalize(statement);
+    return result;
 }
 
 string DataStorage::encryptDecrypt(string toEncrypt) {
@@ -382,38 +381,3 @@ string DataStorage::encryptDecrypt(string toEncrypt) {
 
     return output;
 }
-/*
-void getTableData(string q)
-{
-
-    char *query = &q[0];
-
-    if ( sqlite3_prepare(dbfile, query, -1, &statement, 0 ) == SQLITE_OK ) 
-    {
-        int ctotal = sqlite3_column_count(statement);
-        int res = 0;
-
-        while ( 1 )         
-        {
-            res = sqlite3_step(statement);
-
-            if ( res == SQLITE_ROW ) 
-            {
-                for ( int i = 0; i < ctotal; i++ ) 
-                {
-                    string s = (char*)sqlite3_column_text(statement, i);
-                    // print or format the output as you want 
-                    cout << s << " " ;
-                }
-                cout << endl;
-            }
-            
-            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
-            {
-                cout << "done " << endl;
-                break;
-            }    
-        }
-    }
-} 
-*/

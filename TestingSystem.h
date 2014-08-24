@@ -29,7 +29,7 @@ public:
     Attempt TakeTestUI();
     
     Candidate CreateCandiateUI();
-    Candidate ModifyCandidateUI();
+    Candidate* ModifyCandidateUI();
     string DeleteCandidateUI();
     
     void ShowCandiateResults();

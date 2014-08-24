@@ -49,7 +49,7 @@ void TestingSystem::LecturerMainMenu(User* user)
     cout << "6. Delete test topic" << endl;
     cout << "7. Create test question" << endl;
     cout << "8. Modify test question" << endl;
-    cout << "9. Delete test topic" << endl;
+    cout << "9. Delete test question" << endl;
     cout << "10. View candidate's test result" << endl;
     cout << "11. View results summary" << endl;
     cout << "0. Quit" << endl;
@@ -84,7 +84,11 @@ void TestingSystem::LecturerMainMenu(User* user)
             break;
         case 5:
             t = ModifyTopicUI();
-            ds.WriteTopic(t);
+            ds.ModifyTopic(t);
+            for (int i=0; i<t.GetQuestions().size(); i++)
+            {
+                ds.ModifyQuestion(t.GetQuestions()[i]);
+            }
             break;
         case 6:
             id = DeleteTopicUI();
@@ -92,15 +96,15 @@ void TestingSystem::LecturerMainMenu(User* user)
             break;
         case 7:
             t = CreateSingleQuestionUI();
-            ds.WriteTopic(t);
+            ds.ModifyTopic(t);            
             break;
         case 8:
             t = ModifySingleQuestionUI();
-            ds.WriteTopic(t);
+            ds.ModifyTopic(t);
             break;
         case 9:
             t = DeleteSingleQuestionUI();
-            ds.WriteTopic(t);
+            ds.ModifyTopic(t);
             break;
         case 10:
             ShowCandiateResults();
@@ -199,11 +203,20 @@ Topic TestingSystem::ModifyTopicUI()
     while (!done)
     {
         int questionNo; // index, starts from 0
-        cout << "Enter topic question number to modify (0-" << topic.GetQuestions().size()-1 << "): ";
+        cout << "Enter topic question number to modify (0 to " << topic.GetQuestions().size()-1 << ", -1 to quit): ";
         cin >> questionNo;
+        
+        done = questionNo == -1;
+        
+        if (done)
+            break;
+        
+        Question oldQuestion = topic.GetQuestions()[questionNo];
+        oldQuestion.Print();        
         
         // simply create new question and over write the old one
         Question q = CreateQuestionUI();
+        q.SetId(oldQuestion.GetId());
         topic.ReplaceQuestion(questionNo, q);
     }
     
@@ -379,26 +392,11 @@ void TestingSystem::ShowAllResults()
 Topic TestingSystem::CreateSingleQuestionUI()
 {
     Topic topic = ChooseTopicUI();
-    
-    bool validQuestion = false;
-    int questionNumber;
-
-    while(!validQuestion)
-    {
-        int count = topic.GetQuestions().size();
-        cout << "Enter question number (0-" << count-1 << "): ";
-        cin >> questionNumber;
         
-        validQuestion = questionNumber < 0 || questionNumber > count-1;
-        if (!validQuestion)
-            cout << "Invalid question number." << endl;
-    }
-    
     Question question = CreateQuestionUI();
+    ds.WriteQuestion(question, topic.GetId());
     
-    vector<Question> questions = topic.GetQuestions();
-    questions.push_back(question);
-    topic.SetQuestions(questions);
+    topic.AddQuestion(question);
     
     return topic;
 }
@@ -416,16 +414,17 @@ Topic TestingSystem::ModifySingleQuestionUI()
         cout << "Enter question number (0-" << count-1 << "): ";
         cin >> questionNumber;
         
-        validQuestion = questionNumber < 0 || questionNumber > count-1;
+        validQuestion = questionNumber >= 0 || questionNumber < count;
         if (!validQuestion)
             cout << "Invalid question number." << endl;
     }
     
+    int oldId = topic.GetQuestions()[questionNumber].GetId();
     Question question = CreateQuestionUI();
+    question.SetId(oldId);
+    ds.ModifyQuestion(question);
     
-    vector<Question> questions = topic.GetQuestions();
-    questions[questionNumber] = question;
-    topic.SetQuestions(questions);
+    topic.ReplaceQuestion(questionNumber, question);
     
     return topic;
 }
@@ -443,14 +442,13 @@ Topic TestingSystem::DeleteSingleQuestionUI()
         cout << "Enter question number (0-" << count-1 << "): ";
         cin >> questionNumber;
         
-        validQuestion = questionNumber < 0 || questionNumber > count-1;
+        validQuestion = questionNumber >= 0 || questionNumber < count;
         if (!validQuestion)
             cout << "Invalid question number." << endl;
     }
     
-    vector<Question> questions = topic.GetQuestions();
-    questions.erase(questions.begin() + questionNumber);
-    topic.SetQuestions(questions);
+    ds.DeleteQuestion(topic.GetQuestions()[questionNumber].GetId());
+    topic.RemoveQuestion(questionNumber);
     
     return topic;
 }

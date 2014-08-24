@@ -59,7 +59,7 @@ void Question::Print()
     
     for (int i=0; i < options.size(); i++)
     {
-        cout << (char)('a' + i) << options[i] << endl;
+        cout << (char)('a' + i) << ") " << options[i] << endl;
     }
 }
 

@@ -142,9 +142,24 @@ bool DataStorage::RetrieveTopic(int topicId, Topic& topic) {
 }
 
 bool DataStorage::DeleteTopic(int topicId)
-{
-     doQuery("DELETE * FROM topic INNER JOIN Question ON topic.topicId=Question.topicId INNER JOIN QuestionOption ON Question.questionId=QuestionOption.questionId where topic.topicId="+to_string(topicId));
+{     
+     Topic t;
+     bool result = RetrieveTopic(topicId, t);
+     
+     if (!result)
+         return false;
+     
+     vector<Question> vq = t.GetQuestions();
+     for (int i =0; i < vq.size(); i++)
+     {
+         Question q = vq[i];
+         doQuery("delete from QuestionOption where questionId =" + to_string(q.GetId()));
+         doQuery("delete from Question where questionId =" + to_string(q.GetId()));         
+     }
+     
+     doQuery("delete from Topic where topicId =" + to_string(t.GetId()));
 
+     return true;     
 }
 
 User* DataStorage::RetrieveUser(string username)
@@ -340,6 +355,70 @@ void DataStorage::WriteTopic(Topic topic) {
         {
             doQuery("insert into QuestionOption values(" + to_string(qid) + ",'" + ans[j] + "')");
         }
+    }
+}
+
+void DataStorage::WriteQuestion(Question q, int topicId)
+{
+    string answer(1,q.GetAnswer());
+    doQuery("insert into Question values(NULL," 
+            + to_string(topicId) + "," + to_string(q.GetMarks()) + ",'"
+            + q.GetQuestion() + "','" + answer + "')");
+
+    sqlite3_int64 qid = sqlite3_last_insert_rowid(dbfile);
+
+    vector <string> ans = q.GetOptions();
+    for (int j=0;j<ans.size();j++)
+    {
+        doQuery("insert into QuestionOption values(" + to_string(qid) + ",'" + ans[j] + "')");
+    }
+}
+
+void DataStorage::DeleteQuestion(int questionId)
+{
+    doQuery("delete from QuestionOption where questionId =" + to_string(questionId));
+    doQuery("delete from Question where questionId =" + to_string(questionId));     
+}
+
+void DataStorage::ModifyTopic(Topic topic) {    
+    doQuery("update Topic set totalMarks=" + to_string(topic.GetTotalMarks()) 
+            + " where topicId=" + to_string(topic.GetId()));
+    /*
+    vector<Question> questions = topic.GetQuestions();
+    for (int i=0; i<questions.size(); i++)
+    {
+        
+        Question q = questions[i];
+        
+        doQuery("delete from QuestionOption where questionId =" + to_string(q.GetId()));
+        
+        string answer(1,q.GetAnswer());
+        doQuery("update Question set marks=" + to_string(q.GetMarks()) 
+                + ", question='" + q.GetQuestion() + "', answer ='" + answer 
+                + "' where questionId=" + to_string(q.GetId()));
+        
+        vector <string> ans = q.GetOptions();
+        for (int j=0;j<ans.size();j++)
+        {
+            doQuery("insert into QuestionOption values(" + to_string(q.GetId()) + ",'" + ans[j] + "')");
+        }
+        
+    }*/
+}
+
+void DataStorage::ModifyQuestion(Question q)
+{
+    doQuery("delete from QuestionOption where questionId =" + to_string(q.GetId()));
+
+    string answer(1,q.GetAnswer());
+    doQuery("update Question set marks=" + to_string(q.GetMarks()) 
+            + ", question='" + q.GetQuestion() + "', answer ='" + answer 
+            + "' where questionId=" + to_string(q.GetId()));
+
+    vector <string> ans = q.GetOptions();
+    for (int j=0;j<ans.size();j++)
+    {
+        doQuery("insert into QuestionOption values(" + to_string(q.GetId()) + ",'" + ans[j] + "')");
     }
 }
 

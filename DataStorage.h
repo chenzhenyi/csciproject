@@ -51,6 +51,10 @@ public:
         @return none.
     */
     void WriteTopic(Topic topic);
+    void WriteQuestion(Question q, int topicId);
+    void DeleteQuestion(int questionId);
+    void ModifyTopic(Topic topic);
+    void ModifyQuestion(Question q);
     void WriteCandidate(Candidate candidate);
     void WriteUser(User user);
     void WriteAttempt(Attempt attempt);
